@@ -1,5 +1,6 @@
-public class Helpers {
+package helpers;
 
+public class NumberHelpers {
     /**
      * Checks whether the given number is a prime or not.
      * @return boolean if it is a prime, false otherwise
@@ -19,15 +20,15 @@ public class Helpers {
         return true;
     }
 
-    public static long[] addToArray(long[] array, long element) {
-        long[] newArr = new long[array.length +1];
-        int i = 0;
-        while(i < array.length) {
-            newArr[i] = array[i];
-            i++;
-        }
-        newArr[i] = element;
+    public static double sqrt(long number) {
+        long temp;
+        long sqrt = number / 2;
 
-        return newArr;
+        do {
+            temp = sqrt;
+            sqrt = (temp + number/temp) / 2;
+        } while((temp - sqrt) != 0);
+
+        return sqrt;
     }
 }
