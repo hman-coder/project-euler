@@ -31,4 +31,14 @@ public class NumberHelpers {
 
         return sqrt;
     }
+
+    public static long floor(double number) {
+        return (long) number;
+    }
+
+    public static long power(long number, int power) {
+        long ret = number;
+        for(int i = 0; i < power; i++) ret*= number;
+        return ret;
+    }
 }
