@@ -33,12 +33,18 @@ public class ProblemsSixtyToSeventy {
      * - The difference between u(x) and s must not be greater than n, because otherwise there wouldn't be a value of
      * nf(x) big enough to hold equation *.
      *
+     * @Dynamic_programming: An optimal solution is composed of optimal solutions to smaller sub-problems. If we take
+     * a sum s and pick any three numbers from the input that are equal to s, we can try to construct multiple optimal
+     * solutions from that.
+     *
+     * @Brute_force_search: check all arrangements of the array. Find the ones that are compatible with our needs.
+     *
      */
     public static String[] problem68(int n) {
         assert n%2 == 0;
 
         // There are at most 2n solutions that satisfy the constraints
-        String[] solutions = new String[2*n];
+        int[][] solutions = new int[3*n][n+1];
 
         // We will start indexing at 1 for easier processing, which explains why there is a +1
 
@@ -48,31 +54,51 @@ public class ProblemsSixtyToSeventy {
         // solutions index
         int i = 0;
         for(int sum = lowerBound; sum <= upperBound; sum++) {
-            // availableValues will reference the pairs of values. If availableValues[x] = 0, then x has not been
-            // picked yet. Pairs of values have the same absolute value. However, the inner node value will have a
-            // negative value. For example if a pair p = [1,8] with 8 being the inner node value, then
-            // availableValues[1] = y, availableValues[8] = -y.
-            int[] availableValues = new int[n+1];
-            Arrays.fill(availableValues, 0);
 
-            // next will determine whether a value x is available for being sum - sum of SCC (by calling next[x])
-            boolean[] next = new boolean[n+1];
-            Arrays.fill(next, true);
+            offset_loop:
+            for (int offset = 0; offset < n; offset++) {
+                // availableValues will reference the pairs of values. If availableValues[x] = 0, then x has not been
+                // picked yet. Pairs of values have the same absolute value. However, the inner node value will have a
+                // negative value. For example if a pair p = [1,8] with 8 being the inner node value, then
+                // availableValues[1] = y, availableValues[8] = -y.
+                int[] availableValues = new int[n + 1];
+                Arrays.fill(availableValues, 0);
 
-            int[] solution = problem68_subroutine(availableValues, next, sum, 1);
-            if(solution.length != 0)
-                solutions[i++] = "sum: " + sum + ":   " + problem68_solutionExtractor(solution);
+                // next will determine whether a value x is available for being sum - sum of SCC (by calling next[x])
+                boolean[] next = new boolean[n + 1];
+                Arrays.fill(next, true);
+
+                int[] solution = problem68_subroutine(availableValues, next, sum, 1, offset);
+
+                if (solution.length != 0) {
+                    // Check if the solution already exists
+                    for(int b = 0; b < i;b++) {
+                        if(Arrays.equals(solutions[b], solution))
+                            continue offset_loop;
+                    }
+                    solutions[i++] = solution;
+                }
+            }
         }
-        return solutions;
+
+        String[] finalSolution = new String[3*n];
+        int fs = 0;
+        for(int[] s : solutions) {
+            if (s != null) {
+                finalSolution[fs++] = problem68_solutionExtractor(s);
+            }
+        }
+
+        return finalSolution;
     }
 
-    private static int[] problem68_subroutine(int[] availableValues, boolean[] next, int sum, int nextGroupName) {
+    private static int[] problem68_subroutine(int[] availableValues, boolean[] next, int sum, int nextGroupName, int offset) {
         // 1) pick the first index that is available
         for(int i = 1; i < availableValues.length; i++) {
             if(availableValues[i] != 0) continue;
 
             // 2) pick the next index that is available
-            for(int j = 1; j < availableValues.length; j++) {
+            for(int j = 1+offset; j < availableValues.length; j++) {
                 if(j == i) continue;
                 if(availableValues[j] != 0) continue;
                 // Let elementsSum = i + j
@@ -118,7 +144,7 @@ public class ProblemsSixtyToSeventy {
                 // 10) if there is an index in availableValues (except 0) whose value isn't 0, then return a recursion
                 for(int t = 1; t < availableValues.length; t++)
                     if(availableValues[t] == 0) {
-                        return problem68_subroutine(availableValues, next, sum, nextGroupName);
+                        return problem68_subroutine(availableValues, next, sum, nextGroupName,0);
                     }
 
                 // 11) a solution has been found. return it.
