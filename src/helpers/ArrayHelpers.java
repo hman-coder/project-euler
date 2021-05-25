@@ -12,4 +12,13 @@ public class ArrayHelpers {
 
         return newArr;
     }
+
+    private static <T> boolean arrayContains(T[] array, T element, int startingIndex) {
+        for(int i = startingIndex; i < array.length; i++) {
+            if (array[i].equals(element))
+                return true;
+        }
+
+        return false;
+    }
 }
