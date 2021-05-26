@@ -1,3 +1,5 @@
+import helpers.ArrayHelpers;
+
 import java.util.Arrays;
 
 public class ProblemsSixtyToSeventy {
@@ -44,47 +46,36 @@ public class ProblemsSixtyToSeventy {
         assert n%2 == 0;
 
         // There are at most 2n solutions that satisfy the constraints
-        int[][] solutions = new int[3*n][n+1];
+        Integer[][] solutions = new Integer[n*n*n*n][n+1];
 
         // We will start indexing at 1 for easier processing, which explains why there is a +1
 
-        int lowerBound = (int) (1.5 * n); // Since n is even then 1.5*n must be an int;
+        int lowerBound = n+3;
         int upperBound = 2 * n;
 
-        // solutions index
-        int i = 0;
+        // solutions index. We use an array so that the subroutine can increment it after adding a new solution (int
+        // is a primitive type which is not passed by reference but by object. Arrays are passed by reference)
+        int[] i = {0};
         for(int sum = lowerBound; sum <= upperBound; sum++) {
 
-            offset_loop:
-            for (int offset = 0; offset < n; offset++) {
-                // availableValues will reference the pairs of values. If availableValues[x] = 0, then x has not been
-                // picked yet. Pairs of values have the same absolute value. However, the inner node value will have a
-                // negative value. For example if a pair p = [1,8] with 8 being the inner node value, then
-                // availableValues[1] = y, availableValues[8] = -y.
-                int[] availableValues = new int[n + 1];
-                Arrays.fill(availableValues, 0);
+            // availableValues will reference the pairs of values. If availableValues[x] = 0, then x has not been
+            // picked yet. Pairs of values have the same absolute value. However, the inner node value will have a
+            // negative value. For example if a pair p = [1,8] with 8 being the inner node value, then
+            // availableValues[1] = y, availableValues[8] = -y.
+            Integer[] availableValues = new Integer[n + 1];
+            Arrays.fill(availableValues, 0);
 
-                // next will determine whether a value x is available for being sum - sum of SCC (by calling next[x])
-                boolean[] next = new boolean[n + 1];
-                Arrays.fill(next, true);
+            // next will determine whether a value x is available for being sum - sum of SCC (by calling next[x])
+            boolean[] next = new boolean[n + 1];
+            Arrays.fill(next, true);
 
-                int[] solution = problem68_subroutine(availableValues, next, sum, 1, offset);
-
-                if (solution.length != 0) {
-                    // Check if the solution already exists
-                    for(int b = 0; b < i;b++) {
-                        if(Arrays.equals(solutions[b], solution))
-                            continue offset_loop;
-                    }
-                    solutions[i++] = solution;
-                }
-            }
+            problem68_subroutine(availableValues, next, sum, 1, solutions, i);
         }
 
-        String[] finalSolution = new String[3*n];
+        String[] finalSolution = new String[solutions.length];
         int fs = 0;
-        for(int[] s : solutions) {
-            if (s != null) {
+        for(Integer[] s : solutions) {
+            if (s != null && s[0] != null) {
                 finalSolution[fs++] = problem68_solutionExtractor(s);
             }
         }
@@ -92,13 +83,21 @@ public class ProblemsSixtyToSeventy {
         return finalSolution;
     }
 
-    private static int[] problem68_subroutine(int[] availableValues, boolean[] next, int sum, int nextGroupName, int offset) {
+    private static void problem68_subroutine(Integer[] availableValues, boolean[] next, int sum, int nextGroupName, Integer[][] solutions, int[] solutionIndex) {
+        // We are gonna assume the the second index is the inner node
         // 1) pick the first index that is available
         for(int i = 1; i < availableValues.length; i++) {
             if(availableValues[i] != 0) continue;
+            // Since i is always the outer node then it should never be picked if it's false in next (because at that
+            // point it would be marked as an inner node by a previous iteration)
+            if (! next[i]) continue;
+
+            boolean previousNextOfI = next[i];
+            next[i] = false;
+            availableValues[i] = nextGroupName;
 
             // 2) pick the next index that is available
-            for(int j = 1+offset; j < availableValues.length; j++) {
+            for(int j = 1; j < availableValues.length; j++) {
                 if(j == i) continue;
                 if(availableValues[j] != 0) continue;
                 // Let elementsSum = i + j
@@ -111,58 +110,73 @@ public class ProblemsSixtyToSeventy {
                 // If nextValue is equal to one of the already picked values then continue.
                 if(nextValue == i || nextValue == j) continue;
 
-                // 3) if x > the highest index then the pair doesn't work. continue.
+                // 3) if nextValue > the highest index then the pair doesn't work. continue.
                 if(nextValue > availableValues.length-1) continue;
 
-                // 4) If x is not available in next, then the pair doesn't work. continue
+                // 4) If nextValue is not available in next, then the pair doesn't work. continue
                 if(! next[nextValue]) continue;
 
-                // 5) mark the two numbers with the same group name
-                availableValues[j] = availableValues[i] = nextGroupName;
+                if(solutionForThisPairDoesExist(sum, new int[]{i,j}, solutions)) continue;
+                // ALL CONDITIONS ARE PASSED
 
-                // 6) set x to be false in next.
+                // 5) mark the two numbers with the same group name. j is the inner node
+                availableValues[j] = -1 * availableValues[i];
+
+                // 6) set nextValue to be false in next.
                 next[nextValue] = false;
 
-                // 7) if x is a part of a pair, set the value of the other value in the pair to be false in
-                // next, and set x to be negative in availableValues
-                int groupNameOfX = availableValues[nextValue];
-                if(groupNameOfX != 0) {
-                    availableValues[nextValue] *= -1;
-                    for(int x2 = 1; x2 < availableValues.length; x2++)
-                        if(nextValue != x2 && availableValues[x2] == groupNameOfX) next[x2] = false;
-                }
+                // 7) set the outer node i to be false in next
 
-                // 8) if one of the picked numbers v is not available in next, then v should have a negative value, and
-                // the other value in the pair should be set to false in next.
-                if(! next[i]) availableValues[i] *= -1;
-                if(! next[j]) availableValues[j] *= -1;
-                if(! next[i] || ! next[j]) next[i] = next[j] = false;
-
-                // 9) increase groupName
+                // 8) increase groupName
                 nextGroupName++;
 
-                // 10) if there is an index in availableValues (except 0) whose value isn't 0, then return a recursion
-                for(int t = 1; t < availableValues.length; t++)
-                    if(availableValues[t] == 0) {
-                        return problem68_subroutine(availableValues, next, sum, nextGroupName,0);
-                    }
+                // 9) if there is an index in availableValues (except at index 0) whose value isn't 0, then recurse
+                if(ArrayHelpers.arrayContains(availableValues, 0, 1)) {
+                    problem68_subroutine(availableValues, next, sum, nextGroupName, solutions, solutionIndex);
 
-                // 11) a solution has been found. return it.
-                return availableValues;
+                } else {
+                // 10) a solution has been found.
+                    Integer[] solutionCopy = Arrays.copyOf(availableValues, availableValues.length);
+                    // the 0 index in the solution is the sum
+                    solutionCopy[0] = sum;
+                    solutions[solutionIndex[0]] = solutionCopy;
+
+                    solutionIndex[0] = solutionIndex[0] + 1;
+                }
+
+                availableValues[j] = 0;
+                next[nextValue] = true;
             }
+
+            availableValues[i] = 0;
+            next[i] = previousNextOfI;
         }
-
-
-        return new int[]{};
     }
 
+    // A pair in a certain order exists in only 0 or 1 optimal solution for a problem of size sum
+    private static boolean solutionForThisPairDoesExist(int sum, int[] pair, Integer[][] solutions) {
+        for(Integer[] solution : solutions) {
+            if(solution != null && solution[0] != null && solution[0] == sum)
+                for(int i = 1; i < solution.length; i+=2) {
+                    if(pair[0] == solution[i] && pair[1] == solution[i+1]) {
+                        System.out.println(true);
+                        return true;
+                    }
+                }
 
-    private static String problem68_solutionExtractor(int[] solution) {
+        }
+
+        return false;
+    }
+
+    private static String problem68_solutionExtractor(Integer[] solution) {
         StringBuilder sb = new StringBuilder();
-        for(int i = 1; i < solution.length-1; i++) {
-            int curr = solution[i];
-            for(int j = i+1; j < solution.length; j++){
-                int curr2 = solution[j];
+        sb.append("{{ sum: ").append(solution[0]).append(":   ");
+        int[] copy = Arrays.stream(solution).mapToInt(e -> e == null ? 0 : e).toArray();
+        for(int i = 1; i < copy.length-1; i++) {
+            int curr = copy[i];
+            for(int j = i+1; j < copy.length; j++){
+                int curr2 = copy[j];
                 if(curr2 == curr * -1) {
                     sb
                             .append(Math.max(curr, curr2) == curr ? i : j)
@@ -173,6 +187,7 @@ public class ProblemsSixtyToSeventy {
             }
         }
 
+        sb.append("}}\n");
         return sb.toString();
     }
 }
