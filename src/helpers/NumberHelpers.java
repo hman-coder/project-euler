@@ -12,7 +12,7 @@ public class NumberHelpers {
         // in a number smaller than 2. This decreases time complexity from n to n/2.
         long divisionUpperBound = (number/2) + number % 2;
 
-        while (currentDivision < divisionUpperBound) {
+        while (currentDivision <= divisionUpperBound) {
             if(number % currentDivision == 0)
                 return false;
             currentDivision++;
@@ -38,7 +38,7 @@ public class NumberHelpers {
 
     public static long power(long number, int power) {
         long ret = number;
-        for(int i = 0; i < power; i++) ret*= number;
+        for(int i = 1; i < power; i++) ret*= number;
         return ret;
     }
 }
