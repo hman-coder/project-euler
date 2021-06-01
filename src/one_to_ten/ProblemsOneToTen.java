@@ -6,6 +6,7 @@ import one_to_ten.p02.Problem2;
 import one_to_ten.p03.Problem3;
 import one_to_ten.p04.Problem4;
 import one_to_ten.p05.Problem5;
+import one_to_ten.p06.Problem6;
 
 import java.util.Arrays;
 
@@ -67,6 +68,17 @@ public class ProblemsOneToTen {
         System.out.println("\n-- Alternative method");
         timer.setStart();
         solution = p5.runAlternativeAlgorithm(20);
+        timer.setEnd();
+        System.out.println(solution);
+        System.out.println();
+        timer.print();
+    }
+
+    public static void problem6() {
+        RunTimeTimer timer = new RunTimeTimer();
+        Problem6 p6 = new Problem6();
+        timer.setStart();
+        long solution = p6.runAlgorithm(100);
         timer.setEnd();
         System.out.println(solution);
         System.out.println();
