@@ -10,9 +10,6 @@ import java.util.Arrays;
  * Using the numbers 1 to 10, and depending on arrangements, it is possible to form 16- and 17-digit strings.
  * What is the maximum 16-digit string for a "magic" 5-gon ring?
  *
- * Note: This problem might have a Dynamic Programming solution. However, I will work firstly on the first thing
- * that came to mind, and then check if a DP solution exists.
- *
  * answer:
  * Let's assume the input is n - which marks the highest number in the given set, with all precedent numbers
  * included in the set. n must be even, otherwise a magic n-gon ring cannot be formed.
@@ -21,7 +18,6 @@ import java.util.Arrays;
  * - The sum of each line of numbers s follows this bound: (1.5 * n) < s < (2 * n)
  * - The lower the sum s, the better the solution. That's because, in case of s being low, the outer ring will be
  * mostly filled with higher values, and vice versa.
- * - We probably cannot do better than Brute Force. But we can do a smart one.
  *
  * @Key_idea: Let s be the sum of each line of numbers.
  * Let g be a graph like the one shown in the problem definition. Let g` = g without the edges between the inner
