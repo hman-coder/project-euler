@@ -9,15 +9,23 @@ Working clockwise, and starting from the group of three with the numerically low
 
 It is possible to complete the ring with four different totals: 9, 10, 11, and 12. There are eight solutions in total.
 
-**Total**	     **Solution Set**
-- 9	        4,2,3; 5,3,1; 6,1,2
-- 9	        4,3,2; 6,2,1; 5,1,3
-- 10        2,3,5; 4,5,1; 6,1,3
-- 10        2,5,3; 6,3,1; 4,1,5
-- 11        1,4,6; 3,6,2; 5,2,4
-- 11        1,6,4; 5,4,2; 3,2,6
-- 12        1,5,6; 2,6,4; 3,4,5
-- 12        1,6,5; 3,5,4; 2,4,6
+**Total** ---------- **Solution Set**
+
+9 ------------ 4,2,3; 5,3,1; 6,1,2
+
+9 ------------ 4,3,2; 6,2,1; 5,1,3
+
+10 ----------- 2,3,5; 4,5,1; 6,1,3
+
+10 ----------- 2,5,3; 6,3,1; 4,1,5
+
+11 ----------- 1,4,6; 3,6,2; 5,2,4
+
+11 ----------- 1,6,4; 5,4,2; 3,2,6
+
+12 ----------- 1,5,6; 2,6,4; 3,4,5
+
+12 ----------- 1,6,5; 3,5,4; 2,4,6
 
 By concatenating each group it is possible to form 9-digit strings; the maximum string for a 3-gon ring is 432621513.
 
@@ -41,8 +49,10 @@ So what we need to do is define a proper `f` according to these rules:
 - The difference between `u(x)` and `s` must not be greater than `n`, because otherwise there wouldn't be a value of`nf(x)` big enough to hold equation `*`.
 
 In something close to the Dynamic Programming paradigm, the solution is constructed as follows. Define a complementary value `c` as the value that a pair needs to reach the sum. That is, for a pair `[i,j]` : `c = sum - [i+j].`
-1. Pick the first index that is available (i). This is always the outer (external) node.
-2. Pick another that is available (j). This is always the internal (inner) node.
+
+For every possible sum `s`:
+1. Pick the first index that is available (`i`). This is always the outer (external) node.
+2. Pick another that is available (`j`). This is always the internal (inner) node.
 3. Check whether `c` is already assigned to a previous pair.
 4. If this pair of solution already exists in an optimal solution of the same sum, then skip.
 5. Store these two values.
